@@ -1,0 +1,50 @@
+[app]
+name = "JavaLabs" 
+organization = "personal"
+
+[deploy]
+release_command = "migrate"
+
+[env]
+PORT = "8080"
+
+[build]
+image = "registry.fly.io/JavaLabs:latest"
+
+[build.args]
+NPM_TOKEN = "secret"
+
+[secrets]
+DATABASE_URL = "postgres://admin:admin@hostname:port/database"
+
+[experimental]
+allowed_public_ports = []
+auto_rollback = true
+
+[[services]]
+internal_port = 8080
+protocol = "tcp"
+
+[[services.http_checks]]
+interval = 10000
+timeout = 2000
+method = "get"
+path = "/health"
+
+[[services.ports]]
+handlers = ["http"]
+port = 80
+
+[[services.ports]]
+handlers = ["tls", "http"]
+port = 443
+
+[[services.tcp_checks]]
+grace_period = "1s"
+interval = "15s"
+timeout = "2s"
+
+[[statics]]
+guest_path = "/app/public"
+url_prefix = "/static"
+

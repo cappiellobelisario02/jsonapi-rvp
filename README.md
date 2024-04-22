@@ -1,140 +1,42 @@
-# JSON:API - REST, Validation, Persistence (jsonapi-rvp)
-![Build Status](https://github.com/xlate/jsonapi-rvp/workflows/build/badge.svg) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=xlate_jsonapi-rvp&metric=alert_status)](https://sonarcloud.io/dashboard?id=xlate_jsonapi-rvp) [![Maven Central](https://img.shields.io/maven-central/v/io.xlate/jsonapi-rvp)](https://search.maven.org/artifact/io.xlate/jsonapi-rvp) [![javadoc](https://javadoc.io/badge2/io.xlate/jsonapi-rvp/javadoc.svg)](https://javadoc.io/doc/io.xlate/jsonapi-rvp)
+# BSUIR Schedule Project
 
-Implementation of a [JSON:API](https://jsonapi.org/) server in Java using JAX-RS, Bean Validation, and Java Persistence (JPA). This library is under active development and **APIs may not be stable**. Please open issues for feature requests or bug reports.
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=AvIzAvR_JavaLabs)](https://sonarcloud.io/summary/new_code?id=AvIzAvR_JavaLabs)
 
-## Roadmap
-- Simplify configuration, minimize custom interfaces/classes in client application code
-- API end point generates JavaScript client module and entities
-- Align client interface with JPA `EntityManager`
+This project is designed to manage and retrieve schedules for students, focusing on daily and weekly schedules. It interfaces with an external API to fetch schedule data, then parses and presents this information based on group numbers, days of the week, week numbers, and subgroup numbers. The application is built with Spring Boot and utilizes RestTemplate for API communication.
 
-## Maven Coordinates
-Replace `VERSION` with the latest from Maven Central: [![Maven Central](https://img.shields.io/maven-central/v/io.xlate/jsonapi-rvp)](https://search.maven.org/artifact/io.xlate/jsonapi-rvp)
+## Project Structure
 
-```xml
-<dependency>
-  <groupId>io.xlate</groupId>
-  <artifactId>jsonapi-rvp</artifactId>
-  <version>VERSION</version>
-</dependency>
-```
+The project is organized into several key packages, each serving a specific purpose within the application:
 
-## Example
-```java
-@Path("/blogapi")
-@Transactional // when using JTA transactions
-public class BlogResources extends JsonApiResource {
+- **com.java.labs.avi.config:** Contains configuration classes, including `RestTemplateConfig` for setting up `RestTemplate`.
+- **com.java.labs.avi.controller:** Houses the `ScheduleController`, which manages API endpoints for retrieving schedule information.
+- **com.java.labs.avi.json:** Includes `ScheduleParser` for parsing schedule data fetched from external APIs.
+- **com.java.labs.avi.model:** Contains the `Schedule` model representing the schedule information.
+- **com.java.labs.avi.service:** Comprises `ScheduleService` that contains the logic to fetch and process schedule data.
+- **com.java.labs.avi:** Contains the `JavaLabApplication`, the entry point of the Spring Boot application.
 
-    @PostConstruct
-    void configure() {
-        Set<JsonApiResourceType<?>> resourceTypes = new HashSet<>();
+## Dependencies
 
-        resourceTypes.add(JsonApiResourceType.define("posts", Post.class)
-                                             .build());
-        resourceTypes.add(JsonApiResourceType.define("comments", Comment.class)
-                                             .build());
+- **Spring Boot:** Framework for building the application.
+- **Spring Web:** For creating RESTful services.
+- **RestTemplate:** For making HTTP requests to external APIs.
+- **JSON.org:** For parsing JSON data returned from external APIs.
 
-        super.initialize(resourceTypes);
-    }
+## How to Run the Project
 
-}
+1. Clone the repository: `git clone https://github.com/your-username/JavaLab.git`
+2. Navigate to the project directory: `cd JavaLab`
+3. Build the project: `mvn clean install`
+4. Run the application: `mvn spring-boot:run`
 
-@Entity
-@Table(name = "POSTS")
-public class Post {
+After starting the application, it will be accessible for API requests.
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+## API Endpoints
 
-    @Column
-    private String title;
+- **GET /schedule/{groupNumber}/{dayOfWeek}/{weekNumber}/{numSubgroup}:** Retrieves the schedule for a specific group, day, week, and subgroup.
 
-    @Column
-    private String text;
+## Sample Usage
 
-    @OneToMany(mappedBy = "post")
-    private List<Comment> comments;
-
-    // ... Getters and Setters
-}
-
-@Entity
-@Table(name = "COMMENTS")
-public class Comment {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-
-    @Column
-    private String text;
-
-    @ManyToOne
-    @JoinColumn(name = "post_id")
-    private Post post;
-
-    // ... Getters and Setters
-}
-```
-Assuming a server on localhost, port 8080, JSON:API models are now available at `http://localhost:8080/blogapi/{resource-type}`. See the [JSON:API specification](https://jsonapi.org/format/) for URL conventions and message body formatting. Additionally, an ES6 client module for the API can be retrieved at `http://localhost:8080/blogapi/client.js`. The ES6 client utilizes the standard `fetch` API available in modern browsers.
-
-### Request
-```
-GET /blogapi/posts/2?include=comments HTTP/1.1
-Accept: application/vnd.api+json
-```
-
-### Response
-```json
-{
-  "jsonapi":{"version":"1.0"},
-  "data":{
-    "id": "2",
-    "type": "posts",
-    "attributes": {
-      "title": "Title Two",
-      "text": "Text two."
-    },
-    "relationships": {
-      "comments": {
-        "links": {
-          "self": "/test/posts/2/relationships/comments",
-          "related": "/test/posts/2/comments"
-        },
-        "data": [{
-          "type": "comments", "id": "2"
-        }]
-      },
-      "author": {
-        "links": {
-          "self": "/test/posts/2/relationships/author",
-          "related": "/test/posts/2/author"
-        },
-        "data": null
-      }
-    },
-    "links": {
-       "self": "/test/posts/2"
-    }
-  },
-  "included": [{
-     "type": "comments",
-     "id": "2",
-     "attributes": {
-       "text": "Comment two."
-     },
-     "relationships": {
-       "post": {
-         "links": {
-           "self": "/test/comments/2/relationships/post",
-           "related": "/test/comments/2/post"
-         }
-       }
-     },
-     "links": {
-       "self": "/test/comments/2"
-     }
-   }]
-}
-```
+```bash
+# Retrieve schedule for a specific day, week, and subgroup
+curl "localhost:8080/schedule?groupNumber=250505&dayOfWeek=Суббота&targetWeekNumber=2&numSubgroup=0"
